@@ -9,7 +9,7 @@
 
 int main()
 {
-    std::string lol = "2*4+8*2/3+7";
+    std::string lol = "(4+8*2/3+7)*2";
     auto it = lol.begin();
     auto tok = tokenize(lol);
 
@@ -27,8 +27,7 @@ int main()
     binop.expect((pattern | "+").or_(pattern | "-").or_(pattern | "/").or_(pattern | "*"));
 
     Pattern primitive_noparen_expr;
-    primitive_noparen_expr.expect((exprterm | binop).cycle());
-    primitive_noparen_expr = primitive_noparen_expr | exprterm;
+    primitive_noparen_expr.expect(exprterm | (binop | exprterm).cycle());
     primitive_noparen_expr = primitive_noparen_expr.or_(exprterm);
     Pattern primitive_paren_expr;
     primitive_paren_expr.expect(pattern | "(" | primitive_noparen_expr | ")");
@@ -41,7 +40,7 @@ int main()
     expr = expr.or_(pattern | "(" | expr | ")");
     expr = expr.or_(primitive_expr);
 
-    auto final_it = primitive_noparen_expr.match(tok.begin(), tok.end());
+    auto final_it = expr.match(tok.begin(), tok.end());
     // std::cout << final_it->get_value();
     std::cout << std::boolalpha;
     std::cout << (final_it == tok.begin()) << "\n";
